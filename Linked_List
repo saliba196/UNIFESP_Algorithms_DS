@@ -1,0 +1,368 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+
+typedef struct{
+  int RA;
+  char nome[30];
+}TipoItem;
+
+
+struct noh{
+  TipoItem item;
+  struct noh *prox;
+};
+
+
+typedef struct noh TipoNoh;
+
+typedef struct{
+  TipoNoh *inicioLista;
+  int ultimo;
+}ListaED;
+
+
+int listaVaziaLLED(ListaED*);
+void inicializaListaLLED(ListaED*);
+void destroiListaLLED(ListaED*);
+void imprimeItemLLED(TipoItem);
+void imprimeListaLLED(ListaED*);
+int insereNoFinalLLED(ListaED*,TipoItem);
+int insereNoInicioLLED(ListaED*,TipoItem);
+int removeDoFinalLLED(ListaED*,TipoItem*);
+int removeDoInicioLLED(ListaED*,TipoItem*);
+void AdicionaNaPosicao(ListaED*, int pos, TipoItem);
+int RetiraEspecifico(ListaED*, int pos, TipoItem*);
+int RetiraDaPosicao(ListaED*, int pos, TipoItem*);
+
+
+void imprimeMenu();
+void leDadosAluno(TipoItem *item);
+
+
+int main(){
+  ListaED lista;
+  TipoItem item;
+  int n, i, op=0, chaveaux, removeaux, posicaoaux;
+  inicializaListaLLED(&lista);
+
+  while(op!=5){
+    imprimeMenu();
+    printf("Opção");
+    scanf("%i", &op);
+    switch(op){
+      case 1:
+        printf("\n\t Para adicionar o aluno em uma posição especifica, digite 1; \n\t Para adicionar o aluno na última posição da lista, digite 2;");
+          scanf("%i", &removeaux);
+        if(removeaux == 1){
+          leDadosAluno(&item);
+          if(insereNoFinalLLED(&lista, item)){
+            printf("\n Aluno inserido com sucesso");
+        }
+        }
+        else if(removeaux == 2){
+          printf("Em qual a posição você deseja adicionar?");
+          scanf("%i", &posicaoaux);
+          AdicionaNaPosicao(&lista,posicaoaux,leDadosAluno(&lista, item));
+          if(AdicionaNaPosicao(&lista, item)){
+            printf("\n Aluno inserido com sucesso");
+          }
+        }
+        else {
+          printf("Opção inválida");
+        }
+      break;
+      case 2:
+        printf("\n \tPara remover um aluno específico, digite 1; \n \t Para remover um aluno de uma posição específica, digite 2; \n \t para remover um aluno da última posição, digite 3; \n");
+        scanf("%i", &removeaux);
+        if(removeaux == 1){
+          printf("Digite o ra do aluno que deseja remover");
+          scanf("%i", &chaveaux);
+          RetiraEspecifico(&lista,chaveaux, &item);
+          if(RetiraEspecifico(&lista,chaveaux, &item) == 1){
+            printf("Aluno removido com sucesso");
+          }
+          else{
+            printf("Não foi possível remover o aluno");
+          }
+        }
+        else if(removeaux == 2){
+          printf("Digite a posicao do aluno que deseja remover");
+          scanf("%i", &chaveaux);
+          RetiraDaPosicao(&lista, chaveaux, &item);
+          if(RetiraDaPosicao(&lista, chaveaux, &item)== 1){
+            printf("Aluno removido com sucesso");
+          }
+          else{
+            printf("Não foi possível remover o aluno");
+          }
+        }
+        else if(removeaux == 3){
+          removeDoFinalLLED(&lista, &item);
+          if(removeDoFinalLLED(&lista, &item) == 1){
+            printf("Aluno removido com sucesso");
+          }
+          else{
+              printf("Não foi possível remover o aluno");
+            }
+        }
+        else{
+          printf("Opção inválida");
+        }
+      break;
+      case 3:
+        imprimeListaLLED(&lista);
+      break;
+      case 4:
+        printf("Qual a chave do aluno que deseja encontrar?");
+        scanf("%i", &chaveaux);
+        imprimeItemLLED(item);
+      break;
+    case 5:
+      destroiListaLLED(&lista);
+    break;
+    }
+    
+  }
+
+
+void imprimeMenu(){
+  printf("\nMenu:\n");
+  printf("1 - Inserir aluno.\n");
+  printf("2 - Retirar aluno.\n");
+  printf("3 - Listar alunos.\n");
+  printf("4 - Buscar pela chave.\n");
+  printf("5 - Sair.\n");
+}
+
+void leDadosAluno(TipoItem *item){
+  int i;
+  printf("\nRA: ");
+  scanf("%i",&item->RA);
+  getchar();
+  printf("Nome: ");
+  fgets(item->nome,sizeof(item->nome),stdin);
+  item->nome[strlen(item->nome)-1] = '\0';
+  for(i=0;i<3;i++){
+    printf("Nota %i: ",i+1);
+    scanf("%f",&item->notas[i]);
+  }
+  printf("Frequencia: ");
+  scanf("%i",&item->freq);
+}
+
+
+
+
+int listaVaziaLLED(ListaED *lista){
+  return lista->ultimo==0;
+}
+
+void inicializaListaLLED(ListaED *lista){
+  lista->inicioLista = NULL;
+  lista->ultimo = 0;
+}
+
+void destroiListaLLED(ListaED* lista){
+  TipoNoh *ptrAux1, *ptrAux2;
+  if(!listaVaziaLLED(lista)){
+    ptrAux1 = lista->inicioLista;
+    ptrAux2 = ptrAux1->prox;
+    while(ptrAux1->prox != NULL){
+      free(ptrAux1);
+      ptrAux1 = ptrAux2;
+      ptrAux2 = ptrAux1->prox;
+    }
+    free(ptrAux1);
+  }
+  lista->inicioLista = NULL;
+  lista->ultimo = 0;
+}
+
+void imprimeItemLLED(TipoItem item){
+  printf("%i %s %.1f %.1f %.1f %i\n",item.RA,item.nome,item.notas[0],item.notas[1],item.notas[2],item.freq);
+}
+
+void imprimeListaLLED(ListaED *lista){
+  TipoNoh *ptrAux;
+  if(!listaVaziaLLED(lista)){
+    ptrAux = lista->inicioLista;
+    while(ptrAux != NULL){
+      imprimeItemLLED(ptrAux->item);
+      ptrAux = ptrAux->prox;
+    }
+  }
+}
+
+int insereNoFinalLLED(ListaED *lista,TipoItem item){
+  TipoNoh *novoNoh, *ptrAux;
+  novoNoh = (TipoNoh*) malloc(sizeof(TipoNoh));
+  if(novoNoh != NULL){
+    ptrAux = lista->inicioLista;
+    if(!listaVaziaLLED(lista)){
+      while(ptrAux->prox != NULL)
+        ptrAux = ptrAux->prox;
+      ptrAux->prox = novoNoh;
+    }
+    else{
+      lista->inicioLista = novoNoh;
+    }
+    novoNoh->item = item;
+    novoNoh->prox = NULL;
+    lista->ultimo++;
+    return 1;
+  }
+  return 0;
+}
+
+int insereNoInicioLLED(ListaED *lista,TipoItem item){
+  TipoNoh *novoNoh;
+  novoNoh = (TipoNoh*) malloc(sizeof(TipoNoh));
+  if(novoNoh != NULL){
+    novoNoh->item = item;
+    novoNoh->prox = lista->inicioLista;
+    lista->inicioLista = novoNoh;
+    lista->ultimo++;
+    return 1;
+  }
+  return 0;
+}
+
+int removeDoFinalLLED(ListaED *lista,TipoItem *item){
+  TipoNoh *ptrAux1, *ptrAux2;
+  if(!listaVaziaLLED(lista)){
+    ptrAux1 = lista->inicioLista;
+    ptrAux2 = ptrAux1->prox;
+    if(ptrAux2 == NULL){
+      lista->inicioLista = NULL;
+      *item = ptrAux1->item;
+      free(ptrAux1);
+    }
+    else{
+      while(ptrAux2->prox != NULL){
+        ptrAux1 = ptrAux2;
+        ptrAux2 = ptrAux2->prox;
+      }
+      ptrAux1->prox = NULL;
+      *item = ptrAux2->item;
+      free(ptrAux2);
+    }
+    lista->ultimo--;
+    return 1;
+  }
+  return 0;
+}
+
+int removeDoInicioLLED(ListaED* lista,TipoItem* item){
+  TipoNoh *ptrAux;
+
+  if(!listaVaziaLLED(lista)){
+    ptrAux = lista->inicioLista;
+    lista->inicioLista = ptrAux->prox;
+    *item = ptrAux->item;
+    free(ptrAux);
+    lista->ultimo--;
+    return 1;
+  }
+  else
+    return 0;
+}
+
+
+
+void AdicionaNaPosicao(ListaED* a, int pos, TipoItem b){
+    TipoNoh *novoNoh, *ptrAux1, *ptrAux2;
+  if(a->ultimo == 0){
+     insereNoInicioLLED(a,b);
+  }
+  else if(pos >= (a->ultimo+1)){
+      insereNoFinalLLED(a, b);
+    }
+  else{
+      novoNoh = (TipoNoh*) malloc(sizeof(TipoNoh));
+      if(novoNoh != NULL){
+        ptrAux1 = a->inicioLista;
+          while(ptrAux1->a.prox != pos){
+            ptrAux2 = ptrAux1;
+            ptrAux1 = ptrAux1->prox;
+          } 
+          ptrAux2->prox = novoNoh;
+      }
+      else{
+        a->inicioLista = novoNoh;
+      }
+    novoNoh->item = b;
+    novoNoh->prox = NULL;
+    a->ultimo++;
+  }
+}
+
+
+
+
+  
+
+
+
+int RetiraDaPosicao(ListaED*, int pos, TipoItem*) {
+  TipoNoh *ptrAux1, *ptrAux2;
+  if(a->ultimo == 0){
+     removeDoInicioLLED(a,b);
+  }
+  else if(pos >= (a->ultimo+1)){
+      removeDoFinalLLED(a, b);
+    }
+  else if(!listaVaziaLLED(lista)){
+    ptrAux1 = lista->inicioLista;
+    ptrAux2 = ptrAux1->prox;
+    if(ptrAux2 == NULL){
+      lista->inicioLista = NULL;
+      *item = ptrAux1->item;
+      free(ptrAux1);
+    }
+    else{
+      while(ptrAux2->prox != pos){
+        ptrAux1 = ptrAux2;
+        ptrAux2 = ptrAux2->prox;
+      }
+      ptrAux1->prox =pos;
+      *item = ptrAux2->item;
+      free(ptrAux2);
+    }
+    }
+    lista->ultimo--;
+  }
+
+
+int RetiraEspecifico(ListaED*a, int chave, TipoItem*b){
+  TipoNoh *ptrAux1, *ptrAux2, *pos;
+  while(chave != b->RA){
+    pos = &chave;
+  }
+  if(a->ultimo == 0){
+     removeDoInicioLLED(a,b);
+  }
+  else if(pos >= (a->ultimo+1)){
+      removeDoFinalLLED(a, b);
+    }
+  else if(!listaVaziaLLED(lista)){
+    ptrAux1 = lista->inicioLista;
+    ptrAux2 = ptrAux1->prox;
+    if(ptrAux2 == NULL){
+      lista->inicioLista = NULL;
+      *item = ptrAux1->item;
+      free(ptrAux1);
+    }
+    else{
+      while(ptrAux2->prox != pos){
+        ptrAux1 = ptrAux2;
+        ptrAux2 = ptrAux2->prox;
+      }
+      ptrAux1->prox =pos;
+      *item = ptrAux2->item;
+      free(ptrAux2);
+    }
+    }
+    lista->ultimo--;
+}
