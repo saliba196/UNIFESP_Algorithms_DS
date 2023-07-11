@@ -1,0 +1,146 @@
+// Luiza Araujo de Oliveira Caram   Saliba, Algorithms and Data Structures II
+//Heap Sort with specific string ordenating Key
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
+ 
+int Pivot(char Letter, char *v, int Size);
+int Verify(char *vet, char *v, int Size);
+int Compare(char *p1,  char *p2, char *v, int Size);
+void heapfy(char **vet, int i, int n, char *v, int Size);
+void Build(char **vet, int n, char *v,int Size);
+char *Extract(char **vet, int *n, char *v, int Size);
+char **heap(char **vet, int *n, char *v, int Size);
+ 
+int main(){
+    int N, S, i, Actual_Size, aux, Size; 
+    char *Ordenation_Key;
+    char **Temp_Vector, **Ordenated;
+    scanf("%i", &N);
+    Temp_Vector = (char**)malloc(N*sizeof(char*));
+    scanf("%i", &S);
+    Ordenation_Key = (char*)malloc(S*sizeof(char));
+    scanf("%s", Ordenation_Key);
+    Size = N*S;
+    Actual_Size = N;
+    for(i=0; i<Actual_Size; i++){
+        Temp_Vector[i] = (char*)malloc(Size*sizeof(char));
+        scanf("%s", Temp_Vector[i]);
+        aux = Verify(Temp_Vector[i], Ordenation_Key, Size);
+        if(aux == -1){
+            return 0;
+        }
+    }
+    Ordenated = heap(Temp_Vector, &N, Ordenation_Key, Size);
+    i = 0;
+    if(Actual_Size != 1){
+        for(i=0; i<Actual_Size-1; i++){
+            printf("%s ", Ordenated[i]);
+            free(Ordenated[i]);
+        }
+    }
+    printf("%s\n", Ordenated[i]);
+    free(Ordenated[i]);
+ 
+    free(Ordenation_Key);
+    for(i=0; i<N; i++){
+        free(Temp_Vector[i]);
+    }
+}
+int Verify(char *vet, char *v, int Size){
+    int i;
+    for(i=0; i < Size; i++){
+        if(vet[i] == '\0'){
+            return 0;
+        }
+        if(Pivot(vet[i], v, Size) == -1){
+            printf("A palavra %s eh invalida", vet);
+            return -1;
+        }
+    }
+    return 0;
+}
+ 
+ 
+int Pivot(char Letter, char *v, int Size){
+    int i;
+    for(i=0; i < Size; i++){
+        if(Letter == v[i]){
+            return i;
+        } else if (v[i] == '\0'){
+            break;
+        }
+    }
+    return -1;
+}
+char **heap(char **vet, int *n, char *v, int Size){
+  int i;
+  char **output;
+  Build(vet, *n, v, Size); 
+    output = (char**)malloc((*n)*sizeof(char*));
+    for(i=(*n)-1; i>=0; i--){ 
+        output[i] = (char*)malloc(Size*sizeof(char));
+        output[i] = Extract(vet, n, v, Size);
+    }
+    return output; 
+ 
+}
+ 
+ 
+void Build(char **vet, int n, char *v, int Size){ 
+    int i;
+    for(i = n/2; i >= 0; i--){ 
+        heapfy(vet, i, n, v, Size); 
+    }
+}
+ 
+ 
+void heapfy(char **vet, int i, int n, char *v, int Size){ 
+    int left, right, temp;
+    left = 2*i + 1;
+    right = 2*i + 2; 
+    temp = i;
+    if(left < n && Compare(vet[left], vet[temp], v, Size)){ 
+        temp = left;  
+    }
+    if(right < n && Compare(vet[right], vet[temp], v, Size)){  
+        temp = right;
+    }
+    if(temp != i){ 
+        char *aux = vet[i]; 
+        vet[i] = vet[temp];
+        vet[temp] = aux; 
+        heapfy(vet, temp, n, v, Size);
+    }
+}
+ 
+ 
+int Compare(char *p1,  char *p2, char *v, int Size){
+    int i,aux1,aux2;
+    for(i=0; i < Size; i++){
+        if(p1[i] == '\0' || p2[i] == '\0') {
+            return p2[i] == '\0';
+        }
+       aux1 = Pivot(p1[i], v, Size);
+       aux2 = Pivot(p2[i], v, Size);
+        if(aux1 < aux2){
+            return 0;
+        } else if(aux1 >aux2){
+            return 1;
+        }
+    }
+    return 0;
+}
+ 
+char *Extract(char **vet, int *n, char *v, int Size){
+  char *max;  
+  if(*n < 1){ 
+        return NULL;
+    }
+    max = vet[0];
+    vet[0] = vet[*n-1]; 
+    (*n)--; 
+    heapfy(vet, 0, *n, v, Size); 
+    return max;
+}
+ 
