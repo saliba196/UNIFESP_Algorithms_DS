@@ -1,0 +1,227 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define MAX 300
+
+struct nohArvore{
+  char dado;
+  int altura;
+  struct nohArvore *esq;
+  struct nohArvore *dir;
+};
+
+typedef struct nohArvore TipoNohArv;
+
+typedef TipoNohArv *TipoArvore;
+
+int ordem_sinais(char);
+void inprap(char*, char*);
+
+int arvoreVazia(TipoArvore);
+TipoArvore instanciaArvore(char,int);
+TipoArvore montaraiz(char,int,TipoArvore,TipoArvore);
+TipoArvore destroi(TipoArvore);
+
+TipoArvore montap(char*, int*, int);
+TipoArvore montai(char*, int);
+void maisalto(TipoArvore, int*);
+void imprime_alt(TipoArvore, int);
+
+
+int ordem_sinais(char sinal){
+  if(sinal == '*' || sinal == '/'){
+    return 3;
+  }
+	if(sinal == '+' || sinal == '-'){
+    return 2;
+  }	
+  return 0;
+}
+
+void inprap(char in[], char pos[]){
+  char pilha[MAX];
+  int topo = -1;
+  int i = 0, j = 0;
+  char aux, aux1;
+
+  aux1 = in[i];
+
+  topo++;
+	pilha[topo] = '(';
+
+  while(aux1 != '\0'){
+    if(aux1 == '('){
+      topo++ ;
+		  pilha[topo] = aux1;
+    }
+      
+    else if(aux1 == '-' || aux1 == '+' || aux1 == '/' || aux1 == '*'){
+      aux = pilha[topo];
+      topo--;
+      
+      while(ordem_sinais(aux) >= ordem_sinais(aux1) && (aux == '-' || aux == '+' || aux == '/' || aux == '*')){
+        pos[j] = aux;
+        j++;
+        aux = pilha[topo];
+        topo--;
+      }
+      topo++ ;
+		  pilha[topo] = aux;
+      
+      topo++ ;
+		  pilha[topo] = aux1;
+    }
+
+    else if(aux1 == ')'){
+      aux = pilha[topo];
+      topo--; 
+
+      while(aux != '('){
+				pos[j] = aux;
+				j++;
+				aux = pilha[topo];
+        topo--;
+			}
+    }
+
+    else{
+      pos[j] = aux1;
+      j++;
+    }
+
+    i++;
+		aux1 = in[i];
+  }
+
+  pos[j] = '\0';
+}
+
+int arvoreVazia(TipoArvore arvore){
+  return arvore == NULL;
+}
+
+TipoArvore instanciaArvore(char dado, int altura){
+  TipoArvore arvore;
+  arvore = (TipoArvore)malloc(sizeof(TipoNohArv));
+  arvore->dado = dado;
+  arvore->altura = altura;
+  arvore->esq = NULL;
+  arvore->dir = NULL;
+  return arvore;
+}
+
+TipoArvore montaraiz(char dado, int altura, TipoArvore esq, TipoArvore dir){
+  TipoArvore arvore;
+  arvore = instanciaArvore(dado, altura);
+  arvore->esq = esq;
+  arvore->dir = dir;
+  return arvore;
+}
+
+TipoArvore destroi(TipoArvore arvore){
+  if(!arvoreVazia(arvore)){
+    if(!arvoreVazia(arvore->esq))
+      arvore->esq = destroi(arvore->esq);
+    if(!arvoreVazia(arvore->dir))
+      arvore->dir = destroi(arvore->dir);
+    free(arvore);
+  }
+  return NULL;
+}
+
+TipoArvore montap(char entrada[], int *i, int altura){
+  TipoArvore arvore;
+  char aux;
+
+  aux = entrada[*i];
+
+  arvore = montaraiz(aux, altura, NULL, NULL);
+  altura++;
+ 
+  if(aux == '+' || aux == '-' || aux == '*' || aux == '/'){
+    *i = *i - 1;
+    arvore->dir = montap(entrada,i,altura);
+    *i = *i - 1;
+    arvore->esq = montap(entrada,i,altura);
+  }
+
+  return arvore;
+}
+
+TipoArvore montai(char entrada2[], int altura){
+  TipoArvore arvore;
+  char straux[MAX];
+  int i;
+
+  if(entrada2[strlen(entrada2)-1]=='\n')
+    entrada2[strlen(entrada2)-1]=')';
+  else
+    entrada2[strlen(entrada2)]=')';
+  
+  inprap(entrada2, straux);
+  i = strlen(straux)-1; 
+
+  arvore = montap(straux,&i,altura);
+
+  return arvore;
+}
+
+void maisalto(TipoArvore arvore, int* altura){
+  if(!arvoreVazia(arvore)){
+    if(arvore->altura > *altura)
+      *altura = arvore->altura;
+    maisalto(arvore->esq,altura);
+    maisalto(arvore->dir,altura);
+  }
+}
+
+void imprime_alt(TipoArvore arvore,int altura){
+  if(!arvoreVazia(arvore)){
+    if(arvore->altura == altura)
+    printf("%c", arvore->dado);
+    imprime_alt(arvore->esq, altura);
+    imprime_alt(arvore->dir, altura);
+  }
+}
+
+
+int main(){
+  char linha[MAX]={' '};
+  char laux[MAX];
+  int i, j, k;
+  int altura;
+  TipoArvore arvore = NULL;
+  
+  while(fgets(laux, MAX, stdin)!=NULL){
+    altura = 0;
+    k=0;
+    j=0;
+
+    if(laux[strlen(laux)-1]=='\n')
+      laux[strlen(laux)-1]='\0';
+
+    for(i=0; i<strlen(laux); i++){
+      if(laux[i] != ' ' && laux[i] != '\0'){
+        linha[j] = laux[i];
+        j++;
+      }
+    }
+ 
+    arvore = montai(linha, 0);
+    maisalto(arvore, &altura);
+    
+    for(k=0; k<=altura; k++){
+      printf("Nivel %i: ", k);
+      imprime_alt(arvore, k);
+      printf("\n");
+    }
+    
+    printf("\n");
+    arvore = destroi(arvore);
+    memset(linha, 0, MAX);
+    memset(laux, 0, MAX);
+    }
+  
+  return 0;
+}
