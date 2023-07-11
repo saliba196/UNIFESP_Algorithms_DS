@@ -1,0 +1,182 @@
+// Luiza Araumo de Oliveira Caram   Saliba, AED II
+#include <stdio.h>
+#include <stdlib.h>
+ 
+ 
+#define FALSE 0
+#define TRUE  1
+ 
+typedef long int Keys;
+typedef struct reg {
+  Keys Key;
+} reg;
+typedef struct Page* Vectorp;
+typedef struct Page {
+  short n;
+  reg *r;
+  Vectorp *p;
+} Page;
+ 
+void Inicialize(Vectorp * Root);
+void Insert(reg Reg, Vectorp *Element, int MM);
+Vectorp Create(int m);
+void Destroy_Tree(Vectorp Root);
+void PrintInOrder(Vectorp Root);
+void Number_Of_Elements(Vectorp p);
+int Search(reg *x, Vectorp Element);
+void Insert_Page(Vectorp Element, reg Reg, Vectorp Left_Element);
+void Insert_2(reg Reg, Vectorp Element, short *Bigger, reg *RegReturn,  Vectorp *Element_Return, int MM);
+ 
+ 
+int main(){
+  int m;
+  reg Value;
+  Page *D;
+  scanf("%i", &m);
+  D = Create(m);
+  Inicialize(&D);
+  scanf("%ld", &Value.Key);
+  while(Value.Key>=0){
+    Insert(Value, &D, 2*m);
+     scanf("%ld", &Value.Key);
+  }
+  printf("%i\n", D->n);
+  scanf("%ld", &Value.Key);
+  if(Search(&Value, D)==0){
+    printf("Value not found\n");
+  }
+  Destroy_Tree(D);
+  return 0;
+}
+ 
+ 
+void Inicialize(Vectorp * Root){
+  *Root = NULL; 
+}
+ 
+Vectorp Create(int m){
+  int MM = 2*m;
+  Vectorp D = malloc(sizeof(Page));
+  D->r = (reg*) malloc(MM*sizeof(reg));
+  D->p = (Vectorp*) malloc((MM+1) * sizeof(Vectorp));
+  return D;
+}
+void Destroy_Tree(Vectorp Root){
+  if(Root==NULL)
+    return;
+  for(int i=0;  i<Root->n; i++){
+    Destroy_Tree(Root->p[i]);
+  }
+  free(Root->r);
+  free(Root);
+}
+void PrintInOrder(Vectorp Root){
+    int i;
+    if(Root != NULL){
+        for(i=0; i<Root->n; i++){
+            PrintInOrder(Root->p[i]);
+            printf("%ld ", Root->r[i].Key);
+        }
+ 
+        PrintInOrder(Root->p[i]);
+    }
+    return;
+} 
+ 
+void Number_Of_Elements(Vectorp p){
+  for(int i=0; i<p->n;i++)
+    printf("%ld ", p->r[i].Key);
+  printf("\n");
+}
+ 
+int Search(reg *x, Vectorp Element){ 
+  long i = 1;
+  if (Element == NULL){ 
+    return 0;
+  }
+  while (i < Element->n && x->Key > Element->r[i-1].Key) 
+    i++;
+  if (x->Key == Element->r[i-1].Key) { 
+    *x = Element->r[i-1];
+    printf("%i\n", Element->n);
+    Number_Of_Elements(Element);
+    return 1;
+  }
+  if (x->Key < Element->r[i-1].Key) 
+    Search(x, Element->p[i-1]);
+  else Search(x, Element->p[i]);
+} 
+ 
+void Insert_Page(Vectorp Element, reg Reg, Vectorp Left_Element){ 
+  short Couldnt_Find;
+  int aux;
+  aux = Element->n;  Couldnt_Find = (aux > 0);
+  while (Couldnt_Find) 
+    { if (Reg.Key >= Element->r[aux-1].Key) 
+      { Couldnt_Find = FALSE;
+        break;
+      }
+      Element->r[aux] = Element->r[aux-1];
+      Element->p[aux+1] = Element->p[aux];
+      aux--;
+      if (aux < 1) Couldnt_Find = FALSE;
+    }
+  Element->r[aux] = Reg; 
+  Element->p[aux+1] = Left_Element;
+  Element->n++;
+} 
+ 
+void Insert_2(reg Reg, Vectorp Element, short *Bigger, reg *RegReturn,  Vectorp *Element_Return, int MM){ 
+  long i = 1;
+  long j;
+  Vectorp aux;
+  aux = Create(MM/2);
+  if (Element == NULL) 
+  { *Bigger = TRUE; (*RegReturn) = Reg; (*Element_Return) = NULL;
+    return;
+  }
+  while (i < Element->n && Reg.Key > Element->r[i-1].Key){
+    i++;
+  }
+  if (Reg.Key < Element->r[i-1].Key) i--;
+ 
+  Insert_2(Reg, Element->p[i], Bigger, RegReturn, Element_Return, MM); 
+ 
+  if (!*Bigger) return;
+ 
+  if (Element->n < MM)
+    { Insert_Page(Element, *RegReturn, *Element_Return);
+      *Bigger = FALSE;
+      return;
+    }
+  aux = Create(MM/2); 
+  aux->n = 0;  aux->p[0] = NULL;
+    if (i < (MM/2) + 1) 
+    { Insert_Page(aux, Element->r[MM-1], Element->p[MM]);
+      Element->n--;
+      Insert_Page(Element, *RegReturn, *Element_Return);
+    } 
+    else Insert_Page(aux, *RegReturn, *Element_Return);
+    for (j = (MM/2) + 2; j <= MM; j++) 
+      Insert_Page(aux, Element->r[j-1], Element->p[j]);
+    Element->n = MM/2;  
+    aux->p[0] = Element->p[(MM/2)+1];
+    *RegReturn = Element->r[MM/2];  *Element_Return = aux;
+}
+ 
+void Insert(reg Reg, Vectorp *Element, int MM)
+{ short Bigger;
+  reg RegReturn;
+  Page *Element_Return, *aux;
+  Element_Return = Create(MM/2);
+  
+  Insert_2(Reg, *Element, &Bigger, &RegReturn, &Element_Return, MM); 
+  if (Bigger) 
+  { aux = Create(MM/2);
+    aux->n = 1; 
+    aux->r[0] = RegReturn; 
+    aux->p[1] = Element_Return; 
+    aux->p[0] = *Element; 
+    *Element = aux; 
+  }
+}
