@@ -1,0 +1,143 @@
+// Luiza Araujo de Oliveira Caram   Saliba, RA: 163931, AED II
+
+#include <stdio.h>
+#include <stdlib.h>
+
+struct Node {
+
+  int Data;
+
+  struct Node *Next;
+};
+
+struct Node *merge(struct Node *x, struct Node *y) {
+
+  struct Node *Result = NULL;
+
+  if (x == NULL)
+
+    return y;
+
+  else if (y == NULL)
+
+    return x;
+
+  if (x->Data <= y->Data) {
+
+    Result = x;
+
+    Result->Next = merge(x->Next, y);
+
+  } else {
+
+    Result = y;
+
+    Result->Next = merge(x, y->Next);
+  }
+
+  return Result;
+}
+
+void SplitInHalf(struct Node *Node, struct Node **First, struct Node **Last) {
+  struct Node *base;
+  struct Node *dev;
+  if (Node == NULL || Node->Next == NULL) {
+    *First = Node;
+    *Last = NULL;
+  } else {
+
+    dev = Node;
+
+    base = Node->Next;
+
+    while (base != NULL) {
+
+      base = base->Next;
+
+      if (base != NULL) {
+
+        dev = dev->Next;
+
+        base = base->Next;
+      }
+    }
+
+    *First = Node;
+
+    *Last = dev->Next;
+
+    dev->Next = NULL;
+  }
+}
+
+void mergeSort(struct Node **Index, int *Size) {
+
+  struct Node *aux = *Index;
+
+  struct Node *x;
+
+  struct Node *y;
+
+  int Left_Size, Right_Size;
+
+  if (aux == NULL || aux->Next == NULL) {
+
+    return;
+  }
+
+  SplitInHalf(aux, &x, &y);
+
+  Right_Size = *Size + 1;
+
+  Left_Size = *Size + 1;
+
+  mergeSort(&x, &Left_Size);
+
+  mergeSort(&y, &Right_Size);
+
+  if (Left_Size > Right_Size) {
+
+    *Size = Left_Size;
+
+  } else {
+
+    *Size = Right_Size;
+  }
+
+  *Index = merge(x, y);
+}
+
+int main() {
+  int n, Size = 0, Key;
+  struct Node *aux = NULL;
+  scanf("%d", &n); // Size
+  for (int i = 0; i < n; i++) {
+
+    scanf("%d", &Key);
+
+    struct Node *NewNode = (struct Node *)malloc(sizeof(struct Node));
+
+    NewNode->Data = Key;
+
+    NewNode->Next = aux;
+
+    aux = NewNode;
+  }
+
+  mergeSort(&aux, &Size);
+
+  struct Node *Now = aux;
+
+  while (Now != NULL) {
+
+    printf("%d ", Now->Data);
+
+    Now = Now->Next;
+  }
+
+  printf("\n");
+
+  printf("%i\n", Size);
+
+  return 0;
+}
