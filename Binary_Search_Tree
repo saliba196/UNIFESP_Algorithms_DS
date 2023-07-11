@@ -1,0 +1,188 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+//Binary Search Tree Full implementation
+
+struct Tree_node{
+  int Key;
+  struct Tree_node *left;
+  struct Tree_node *right;
+};
+
+typedef struct Tree_node Tipe_Tree_node;
+
+typedef Tipe_Tree_node *Tree_ptr;
+
+int Empty(Tree_ptr);
+Tree_ptr Allocate_Tree(int);
+Tree_ptr inicialize_Tree();
+Tree_ptr destroyTree(Tree_ptr);
+Tree_ptr Insert(Tree_ptr,int);
+Tree_ptr Remove(Tree_ptr,int);
+Tree_ptr Search(Tree_ptr,int);
+void Print_Pre_Order(Tree_ptr);
+void Print_In_Order(Tree_ptr);
+void Print_Post_Order(Tree_ptr);
+
+int Empty(Tree_ptr Tree){
+  return Tree ==NULL;
+}
+
+Tree_ptr Allocate_Tree(int Key){
+  Tree_ptr Tree;
+  Tree = (Tree_ptr) malloc(sizeof(Tipe_Tree_node));
+  Tree->Key = Key;
+  Tree->left = NULL;
+  Tree->right = NULL;
+  return Tree;
+}
+
+Tree_ptr inicialize_Tree(){
+  return NULL;
+}
+
+Tree_ptr destroyTree(Tree_ptr Tree){
+  if(!Empty(Tree)){
+    destroyTree(Tree->left);
+    destroyTree(Tree->right);
+    free(Tree);
+  }
+  return NULL;
+}
+
+Tree_ptr Insert(Tree_ptr Tree,int Key){
+  if(!Empty(Tree)){
+    if(Tree->Key>Key){
+      Tree->left = Insert(Tree->left,Key);
+    }
+    else{
+      if(Tree->Key<Key){
+        Tree->right = Insert(Tree->right,Key);
+      }
+    }
+  }
+  else{
+    Tree = Allocate_Tree(Key);
+  }
+  return Tree;
+}
+
+
+Tree_ptr Search(Tree_ptr Tree,int Key){
+  if(!Empty(Tree)){
+    if(Tree->Key>Key){
+      return Search(Tree->left,Key);
+    }
+    else{
+      if(Tree->Key<Key){
+        return Search(Tree->right,Key);
+      }
+      else
+        return Tree;
+    }
+  }
+  return NULL;
+}
+
+void Print_Pre_Order(Tree_ptr Tree){
+  if(!Empty(Tree)){
+    printf("%i",Tree->Key);
+    Print_Pre_Order(Tree->left);
+    Print_Pre_Order(Tree->right);
+  }  
+}
+
+void Print_In_Order(Tree_ptr Tree){
+  if(!Empty(Tree)){
+    Print_In_Order(Tree->left);
+    printf("%i",Tree->Key);
+    Print_In_Order(Tree->right);
+  }  
+}
+
+void Print_Post_Order(Tree_ptr Tree){
+  if(!Empty(Tree)){
+    Print_Post_Order(Tree->left);
+    Print_Post_Order(Tree->right);
+    printf("%i",Tree->Key);
+  }  
+}
+
+Tree_ptr Remove(Tree_ptr Root, int Key){ 
+    if (Root == NULL) {
+        return NULL;
+    }
+    if (Key == Root->Key) {
+        if (Root->left != NULL && Root->right != NULL) {
+            Tree_ptr aux;
+            aux= Root->left;
+            while (aux->right != NULL) {
+                aux = aux->right;
+            }
+            Root->Key = aux->Key;
+            aux->Key = Key;
+            Root->left = Remove(Root->left, Key);
+            return Root;
+        }
+        if (Root->left == NULL && Root->right== NULL) {
+            free(Root);
+            return NULL;
+        } 
+       Tree_ptr aux;
+        if (Root->left == NULL) {
+            aux = Root->right;
+        } else {
+            aux = Root->left;
+        }
+        free(Root);
+        return aux;
+    } else if (Key < Root->Key) {
+        Root->left = Remove(Root->left, Key);
+    } else {
+        Root->right = Remove(Root->right, Key);
+    }
+    return Root;
+}
+
+int main(){
+  Tree_ptr Root;
+  Root = inicialize_Tree();
+  char op[100]; //operation to be executed
+  int Key;
+  while(scanf("%s", op) != EOF){ // EOF = Kill program
+    if(op[0]=='I'){
+      if(strcmp(op,"INORDER")==0){ //if Option = Inorder, Print Inorder
+        Print_In_Order(Root);
+        printf("\n");
+      }
+      else{
+        scanf("%i", &Key); //Else, Insert
+        Root = Insert(Root, Key);
+      }
+    }
+    else if(op[0] == 'R'){ // Remove
+      scanf("%i", &Key);
+      Root = Remove(Root, Key);
+    }
+    else if(op[0] == 'P'){
+      if(strcmp(op,"PREORDER") == 0){ //print Preorder
+        Print_Pre_Order(Root);
+        printf("\n");
+      }
+      else if(strcmp(op,"POSTORDER") == 0){ //print Postorder
+        Print_Post_Order(Root);
+        printf("\n");
+      }
+      else{ //Search for key
+        scanf("%i", &Key);
+        if(Search(Root, Key) == NULL){ 
+            printf("%i not found\n", Key);
+        }
+        else{
+          printf("%i found\n",Key);
+        }
+      } 
+    } 
+  }
+}
