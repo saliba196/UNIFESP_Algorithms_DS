@@ -1,0 +1,107 @@
+// Luiza Araujo de Oliveira Caram   Saliba, AED II
+#include <stdio.h>
+#include <stdlib.h>
+ 
+#define MAX 200
+ 
+typedef struct Graph {
+    int Key;
+    struct Graph* next;
+} Graph;
+ 
+Graph* New_Graph(int Key);
+void Edge(Graph* Graph[], int Index, int last);
+void DFS(int Graph, int Passed[], struct Graph* Graph[]);
+void Search_DFS(int Index, int n, Graph* Graph[]);
+void BFS(int Index, int n, Graph* Graph[]);
+ 
+ 
+int main() {
+    int v, n, m;
+    Graph* Graph[MAX] = { NULL };
+    scanf("%i", &v);
+    scanf("%i", &n);
+    scanf("%i", &m);
+    for (int i = 0; i < m; i++) {
+        int Index, last;
+        scanf("%i %i", &Index, &last);
+        Edge(Graph, Index, last);
+    }
+    BFS(v, n, Graph);
+    printf("\n");
+    Search_DFS(v, n, Graph);
+    return 0;
+}
+ 
+ 
+Graph* New_Graph(int Key) {
+    Graph* aux = (Graph*)malloc(sizeof(Graph));
+    aux->Key = Key;
+    aux->next = NULL;
+    return aux;
+}
+ 
+void Edge(Graph* Graph[], int Index, int last) {
+    Graph *New_Node,*Now_Temp, *ant;
+    New_Node = New_Graph(last);
+ 
+    if (Graph[Index] == NULL) {
+        Graph[Index] = New_Node;
+    } else {
+        Now_Temp = Graph[Index];
+        ant = NULL;
+        while (Now_Temp != NULL && Now_Temp->Key < last) {
+            ant = Now_Temp;
+            Now_Temp = Now_Temp->next;
+        }
+        if (ant == NULL) {
+            New_Node->next = Graph[Index];
+            Graph[Index] = New_Node;
+        } else {
+            ant->next = New_Node;
+            New_Node->next = Now_Temp;
+        }
+    }
+}
+ 
+void BFS(int Index, int n, Graph* Graph[]) {
+    int Passed[MAX] = {0};
+    int queue[MAX];
+    int next = 0, Temp = -1;
+    Passed[Index] = 1;
+    queue[++Temp] = Index;
+ 
+    while (next <= Temp) {
+        int currentNode = queue[next++];
+        printf("%i ", currentNode);
+ 
+        Graph* Now_Temp = Graph[currentNode];
+        while (Now_Temp != NULL) {
+            if (!Passed[Now_Temp->Key]) {
+                Passed[Now_Temp->Key] = 1;
+                queue[++Temp] = Now_Temp->Key;
+            }
+            Now_Temp = Now_Temp->next;
+        }
+    }
+}
+ 
+ 
+void Search_DFS(int Index, int n, Graph* Graph[]) {
+    int Passed[MAX] = {0};
+    DFS(Index, Passed, Graph);
+}
+ 
+ 
+void DFS(int Graph, int Passed[], struct Graph* Graph[]) {
+    printf("%i ", Graph);
+    Passed[Graph] = 1;
+    struct Graph *Now_Temp;
+    Now_Temp = Graph[Graph];
+    while (Now_Temp != NULL) {
+        if (!Passed[Now_Temp->Key]) {
+            DFS(Now_Temp->Key, Passed, Graph);
+        }
+        Now_Temp = Now_Temp->next;
+    }
+}
