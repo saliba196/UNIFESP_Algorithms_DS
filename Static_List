@@ -1,0 +1,189 @@
+#include <stdlib.h>
+#include <string.h>
+#include <stdio.h>
+
+
+
+#define MAX 1000
+
+typedef struct{
+  int chave;
+  char nome[50];
+} TipoItem;
+
+typedef struct{
+  TipoItem itens[MAX];
+  int ultimo;
+} ListaLinearSE;
+
+void inicializaLLSE(ListaLinearSE*);
+void imprimeListaLLSE(ListaLinearSE*);
+int insereNoFinalLLSE(ListaLinearSE*,TipoItem);
+int removeDoFinalLLSE(ListaLinearSE*,TipoItem*);
+int removeDoComecoLLSE(ListaLinearSE*,TipoItem*);
+void adicionaNaposicao(ListaLinearSE*, TipoItem*);
+int RetiraDaPosicao (ListaLinearSE*, TipoItem*, int i);
+int RetiraEspecifico (ListaLinearSE*, TipoItem*);
+
+int main(){
+  ListaLinearSE lista;
+  TipoItem item;
+  int i,n, posicao;
+  
+  inicializaLLSE(&lista);
+  
+  
+  printf("Número de itens a serem inseridos: ");
+  scanf("%i",&n);
+  for(i=0;i<n;i++){
+    printf("Item %i\n",i+1);
+    printf("Chave: ");
+    scanf("%i",&item.chave);
+    getchar();
+    printf("Nome: ");
+    fgets(item.nome,sizeof(item.nome),stdin);
+    item.nome[strlen(item.nome)-1] = '\0';
+    if(insereNoFinalLLSE(&lista,item)<0){
+      printf("Erro! Tamanho limite excedido!\n");
+      break;
+    }
+  }
+
+  printf("\nItens na lista:\n");
+  imprimeListaLLSE(&lista);
+
+  if(RetiraDaPosicao(&lista,&item)<0){
+    printf("insira a posicao do iten que deseja remover");
+    scanf("%i", &posicao);
+  }
+
+  if(removeDoComecoLLSE(&lista,&item)<0){
+    printf("Erro! Lista Vazia!\n");
+  }
+  else{
+    printf("\nItem Removido: %i %s\n",item.chave,item.nome);
+  }
+
+  printf("\nItens na lista:\n");
+  imprimeListaLLSE(&lista);
+  
+  if(removeDoFinalLLSE(&lista,&item)<0){
+    printf("Erro! Lista Vazia!\n");
+  }
+  else{
+    printf("\nItem Removido: %i %s\n",item.chave,item.nome);
+  }
+
+  printf("\nItens na lista:\n");
+  imprimeListaLLSE(&lista);
+
+  return 0;
+}
+
+
+
+
+void inicializaLLSE(ListaLinearSE *lista){
+  lista->ultimo = 0;
+}
+
+void imprimeListaLLSE(ListaLinearSE *lista){
+  int i;
+
+  for(i=0;i<lista->ultimo;i++){
+    printf("%i %s\n",lista->itens[i].chave,lista->itens[i].nome);
+  }
+}
+
+
+int insereNoFinalLLSE(ListaLinearSE *lista, TipoItem novoItem){
+  int pos = lista->ultimo;
+
+  if(pos < MAX){
+    lista->itens[pos] = novoItem;
+    lista->ultimo++;
+    return 0;
+  }
+  else
+    return -1;
+}
+
+int removeDoFinalLLSE(ListaLinearSE *lista,TipoItem *item){
+  int pos = lista->ultimo;
+  if(pos>0){
+    item->chave = lista->itens[pos-1].chave;
+    strcpy(item->nome,lista->itens[pos-1].nome);
+    lista->ultimo--;
+    return 0;
+  }
+  return -1;
+}
+
+int removeDoComecoLLSE(ListaLinearSE *lista,TipoItem *item){
+  int i;
+  int pos = lista->ultimo;
+  if(lista->ultimo>0){
+    item->chave = lista->itens[0].chave;
+    strcpy(item->nome,lista->itens[0].nome);
+    for(i=1;i<pos;i++){
+      lista->itens[i-1].chave = lista->itens[i].chave;
+      strcpy(lista->itens[i-1].nome,lista->itens[i].nome);
+    }
+    lista->ultimo--;
+    return 0;
+  }
+  return -1;
+}
+
+
+void adicionaNaposicao(ListaLinearSE*, TipoItem*){
+  int pos, i;
+  if(lista->ultimo>0){
+    printf("Em qual posição você deseja adicionar?");
+    scanf("%i", &pos);
+    for(i=pos; i<lista->ultimo; i++){
+        lista->itens[i].chave = lista->itens[i+1].chave;
+        strcpy(lista->itens[i].nome,lista->itens[i+1].nome);
+      }
+    lista->itens[pos] = novoItem;
+    lista->ultimo++;
+    return 0;
+  }
+  else
+    return -1;
+}
+
+
+
+int RetiraDaPosicao (ListaLinearSE *lista, TipoItem *item, int posicao){
+  int i;
+  if(lista->ultimo>0){
+    for(i=posicao; i<lista->ultimo; i++){
+        lista->itens[i-1].chave = lista->itens[i].chave;
+        strcpy(lista->itens[i-1].nome,lista->itens[i].nome);
+        lista->ultimo--;
+      }
+    return 0;
+    }
+  return -1;
+  }
+
+
+
+int RetiraEspecifico (ListaLinearSE *lista, TipoItem *item){
+  int chavecmp;
+  int j;
+  if(lista->ultimo>0){
+    printf("insira a chave do item que deseja remover");
+    scanf("%i", &chavecmp);
+    for(j=0; j<lista->ultimo; j++){
+      if(chavecmp == lista->itens[0].chave){
+        RetiraDaPosicao (lista,item, j);
+      }
+    }
+    return 0;
+  }
+  return -1;
+}
+
+
