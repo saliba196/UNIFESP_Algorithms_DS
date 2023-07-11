@@ -1,0 +1,378 @@
+// Luiza Araujo de Oliveira Caram   Saliba, AED II
+#include <stdio.h>
+#include <stdlib.h>
+
+// AVL TREE + RED BLACK TREE -> Implementation + Height Comparison
+
+// avl tree implementation
+ 
+struct Node {
+  int Key;
+  struct Node *Left;
+  struct Node *Right;
+  int Height;
+};
+ 
+struct Node *New_Node(int Key) {
+  struct Node *New_NodeNode = (struct Node *)malloc(sizeof(struct Node));
+  New_NodeNode->Key = Key;
+  New_NodeNode->Left = NULL;
+  New_NodeNode->Right = NULL;
+  New_NodeNode->Height = 1;
+  return New_NodeNode;
+  free(New_NodeNode);
+}
+ 
+int max(int a, int b) { return (a > b) ? a : b; }
+ 
+int Height(struct Node *Node) {
+ 
+  if (Node == NULL) {
+    return 0;
+  }
+  return Node->Height;
+}
+ 
+int FatBal(struct Node *Node) {
+  if (Node == NULL) {
+    return 0;
+  }
+  return Height(Node->Left) - Height(Node->Right);
+}
+ 
+void Height4(struct Node *Node) {
+  if (Node == NULL) {
+    return;
+  }
+  int Left_Height,Right_Height;
+  Left_Height = Height(Node->Left);
+ Right_Height = Height(Node->Right);
+  Node->Height = max(Left_Height,Right_Height) + 1;
+}
+ 
+struct Node *Right_Rotation(struct Node *Node) {
+  struct Node *Temp_Node, *aux2;
+  Temp_Node = Node->Left;
+  aux2 = Temp_Node->Right;
+ 
+  Temp_Node->Right = Node;
+  Node->Left = aux2;
+ 
+  Height4(Node);
+  Height4(Temp_Node);
+ 
+  return Temp_Node;
+}
+ 
+struct Node *Left_Rotation(struct Node *Node) {
+  struct Node *Temp_Node, *aux2;
+  Temp_Node = Node->Right;
+  aux2 = Temp_Node->Left;
+  Temp_Node->Left = Node;
+  Node->Right = aux2;
+  Height4(Node);
+  Height4(Temp_Node);
+ 
+  return Temp_Node;
+}
+ 
+struct Node *Insert_AVL(struct Node *Node, int Key, int *AVL_Counter) {
+  if (Node == NULL) {
+    return New_Node(Key);
+  }
+ 
+  if (Key < Node->Key) {
+    Node->Left = Insert_AVL(Node->Left, Key, AVL_Counter);
+  } else if (Key > Node->Key) {
+    Node->Right = Insert_AVL(Node->Right, Key, AVL_Counter);
+  } else {
+    return Node;
+  }
+ 
+  Height4(Node);
+ 
+  int Balancing_Factor;
+  Balancing_Factor = FatBal(Node);
+ 
+  if (Balancing_Factor > 1 && Key < Node->Left->Key) {
+    (*AVL_Counter)++;
+    return Right_Rotation(Node);
+  }
+ 
+  if (Balancing_Factor < -1 && Key > Node->Right->Key) {
+    (*AVL_Counter)++; 
+    return Left_Rotation(Node);
+  }
+ 
+  if (Balancing_Factor > 1 && Key > Node->Left->Key) {
+    Node->Left = Left_Rotation(Node->Left);
+    (*AVL_Counter)++; 
+    return Right_Rotation(Node);
+  }
+ 
+  if (Balancing_Factor < -1 && Key < Node->Right->Key) {
+    Node->Right = Right_Rotation(Node->Right);
+    (*AVL_Counter)++; 
+    return Left_Rotation(Node);
+  }
+ 
+  return Node;
+}
+ 
+struct Node *Search(struct Node *Node, int Key) {
+  if (Node == NULL) {
+    return NULL;
+  } else if (Key < Node->Key) {
+    return Search(Node->Left, Key);
+  } else if (Key > Node->Key) {
+    return Search(Node->Right, Key);
+  } else
+    return Node;
+}
+ 
+int Max_Height(struct Node *Node) {
+ 
+  if (Node == NULL) {
+    return 0;
+  }
+ 
+  int LeftHeight = Max_Height(Node->Left);
+ 
+  int RightHeight = Max_Height(Node->Right);
+ 
+  int maxHeight = max(LeftHeight, RightHeight) + 1;
+ 
+  return maxHeight;
+}
+ 
+// Red Black Tree
+ 
+typedef enum { RED, BLACK } Color;
+ 
+typedef struct RB_Tree {
+  int Size;
+  Color color;
+  struct RB_Tree *Father;
+  struct RB_Tree *Left;
+  struct RB_Tree *Right;
+} RB_Node;
+ 
+RB_Node *RB_New_Node(int Size) {
+  RB_Node *New_NodeRB_Node = (RB_Node *)malloc(sizeof(RB_Node));
+  New_NodeRB_Node->Size = Size;
+  New_NodeRB_Node->color = RED;
+  New_NodeRB_Node->Father = NULL;
+  New_NodeRB_Node->Left = NULL;
+  New_NodeRB_Node->Right = NULL;
+  return New_NodeRB_Node;
+}
+ 
+RB_Node *Insert_RB_Node(RB_Node *Root, RB_Node *New_NodeRB_Node) {
+  if (Root == NULL) {
+    return New_NodeRB_Node;
+  }
+ 
+  if (New_NodeRB_Node->Size < Root->Size) {
+    Root->Left = Insert_RB_Node(Root->Left, New_NodeRB_Node);
+    Root->Left->Father = Root;
+  } else if (New_NodeRB_Node->Size > Root->Size) {
+    Root->Right = Insert_RB_Node(Root->Right, New_NodeRB_Node);
+    Root->Right->Father = Root;
+  }
+ 
+  return Root;
+}
+ 
+void Swap_color(Color *a, Color *b) {
+  Color temp = *a;
+  *a = *b;
+  *b = temp;
+}
+ 
+void Left_Rotationvb(RB_Node **Root, RB_Node *Node, int *contvp) {
+  RB_Node *Rightaux;
+  Rightaux = Node->Right;
+  Node->Right = Rightaux->Left;
+ 
+  if (Node->Right != NULL) {
+    Node->Right->Father = Node;
+  }
+ 
+  Rightaux->Father = Node->Father;
+ 
+  if (Node->Father == NULL) {
+    *Root = Rightaux;
+  } else if (Node == Node->Father->Left) {
+    Node->Father->Left = Rightaux;
+  } else {
+    Node->Father->Right = Rightaux;
+  }
+ 
+  Rightaux->Left = Node;
+  Node->Father = Rightaux;
+ 
+  (*contvp)++;
+}
+ 
+void Right_Rotationvb(RB_Node **Root, RB_Node *Node, int *contvp) {
+  RB_Node *Leftaux;
+  Leftaux = Node->Left;
+  Node->Left = Leftaux->Right;
+ 
+  if (Node->Left != NULL) {
+    Node->Left->Father = Node;
+  }
+ 
+  Leftaux->Father = Node->Father;
+ 
+  if (Node->Father == NULL) {
+    *Root = Leftaux;
+  } else if (Node == Node->Father->Left) {
+    Node->Father->Left = Leftaux;
+  } else {
+    Node->Father->Right = Leftaux;
+  }
+ 
+  Leftaux->Right = Node;
+  Node->Father = Leftaux;
+ 
+  (*contvp)++;
+}
+void Color_Correction(RB_Node **Root, RB_Node *New_NodeRB_Node, int *contvp, int *cont) {
+  RB_Node *Father = NULL;
+  RB_Node *Vo = NULL;
+ 
+  while ((New_NodeRB_Node != *Root) && (New_NodeRB_Node->color != BLACK) &&
+         (New_NodeRB_Node->Father->color == RED)) {
+    Father = New_NodeRB_Node->Father;
+    Vo = New_NodeRB_Node->Father->Father;
+    if (Father == Vo->Left) {
+      RB_Node *tio = Vo->Right;
+ 
+      if (tio != NULL && tio->color == RED) {
+        Vo->color = RED;
+        Father->color = BLACK;
+        tio->color = BLACK;
+        New_NodeRB_Node = Vo;
+        (*cont) += 3;
+      } else {
+        if (New_NodeRB_Node == Father->Right) {
+          Left_Rotationvb(Root, Father, contvp);
+ 
+          New_NodeRB_Node = Father;
+          Father = New_NodeRB_Node->Father;
+        }
+ 
+        Right_Rotationvb(Root, Vo, contvp);
+        Swap_color(&(Father->color), &(Vo->color));
+ 
+        (*cont) += 2;
+        New_NodeRB_Node = Father;
+      }
+    } else {
+      RB_Node *tio = Vo->Left;
+      if (tio != NULL && tio->color == RED) {
+        Vo->color = RED;
+        Father->color = BLACK;
+        tio->color = BLACK;
+        New_NodeRB_Node = Vo;
+        (*cont) += 3;
+      } else {
+        if (New_NodeRB_Node == Father->Left) {
+          Right_Rotationvb(Root, Father, contvp);
+          New_NodeRB_Node = Father;
+          Father = New_NodeRB_Node->Father;
+        }
+ 
+        Left_Rotationvb(Root, Vo, contvp);
+        Swap_color(&(Father->color), &(Vo->color));
+        (*cont) += 2;
+        New_NodeRB_Node = Father;
+      }
+    }
+  }
+  (*Root)->color = BLACK;
+}
+ 
+int Max_Heightvb(RB_Node *RB_Node) {
+  if (RB_Node == NULL) {
+    return 0;
+  }
+  int Left_Height,Right_Height;
+  Left_Height = Max_Heightvb(RB_Node->Left);
+ Right_Height = Max_Heightvb(RB_Node->Right);
+ 
+  return (Left_Height >Right_Height) ? (Left_Height + 1) : (altRight + 1);
+}
+ 
+ 
+ 
+int Max_Black_Height(RB_Node* Node) {
+    if (Node == NULL) {
+        return 0;
+    }
+  int Left_Height,Right_Height, atual;
+    Left_Height = Max_Black_Height(Node->Left);
+   Right_Height = Max_Black_Height(Node->Right);
+ 
+    atual = (Node->color == BLACK) ? 1 : 0;
+ 
+    return (Left_Height >Right_Height) ? (Left_Height + atual) : (altRight + atual);
+}
+ 
+ 
+void Destroy(RB_Node *RB_Node) {
+  if (RB_Node == NULL) {
+    return;
+  }
+  Destroy(RB_Node->Left);
+  Destroy(RB_Node->Right);
+  free(RB_Node);
+}
+ 
+int conSwap_color(RB_Node *Root) {
+  if (Root == NULL || (Root->Left == NULL && Root->Right == NULL)) {
+    return 0;
+  }
+ 
+  int cont = 0;
+ 
+  if (Root->Left != NULL && Root->Left->color != Root->color) {
+    cont++;
+  }
+ 
+  if (Root->Right != NULL && Root->Right->color != Root->color) {
+    cont++;
+  }
+ 
+  cont += conSwap_color(Root->Left);
+  cont += conSwap_color(Root->Right);
+ 
+  return cont;
+}
+ 
+ 
+int main() {
+ 
+  struct Node *Rootavl = NULL;
+  RB_Node *Rootvb = NULL;
+  int AVL_Counter=0,contvp=0,cont=0, aux, Max_Heightp, Height_Leftvp, Height_Righttvp, Max_Heightvp;
+  scanf("%i", &aux);
+  while (aux>=0) {
+    Rootavl = Insert_AVL(Rootavl, aux, &AVL_Counter);
+    RB_Node *New_NodeRB_Node = RB_New_Node(aux);
+    Rootvb = Insert_RB_Node(Rootvb, New_NodeRB_Node);
+    Color_Correction(&Rootvb, New_NodeRB_Node, &contvp, &cont);
+    scanf("%i", &aux);
+  }
+  Max_Heightp = Max_Black_Height(Rootvb);
+  Height_Leftvp = Max_Heightvb(Rootvb->Left);
+  Height_Righttvp = Max_Heightvb(Rootvb->Right);
+  printf("%i, %i, %i\n", Max_Height(Rootavl) - 1, Height(Rootavl->Left),Height(Rootavl->Right));
+  Max_Heightvp = Max_Heightvb(Rootvb);
+  printf("%i, %i, %i\n", Max_Heightvp - 1, Height_Leftvp, Height_Righttvp);
+  printf("%d\n", Max_Heightp);
+  printf("%i, %i, %i\n", cont, contvp, AVL_Counter);
+  Destroy(Rootvb);
+  return 0;
+}
