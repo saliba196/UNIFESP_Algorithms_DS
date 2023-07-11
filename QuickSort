@@ -1,0 +1,139 @@
+// Luiza Araujo de Oliveira Caram   Saliba, RA: 163931, AED II
+#include <stdio.h>
+#include <stdlib.h>
+ 
+int *vetaux(int *v, int n);
+void Swap(int *v, int a, int b);
+int Partition(int *v, int Index, int Last);
+void defMinMax(int aux, int *Min, int *Max);
+void quickSort(int *v, int Index, int Last, int Now, int *Min, int *Max);
+int Height_Difference(int Min, int Max);
+int Median_Pivot(int *v, int Index, int Last);
+int Median_Partition(int *v, int Index, int Last);
+void Median_QuickSort(int *v, int Index, int Last, int Now, int *Min, int *Max);
+ 
+int main() {
+  int n, i, aux;
+  scanf("%i", &n);
+  int *v, *v2;
+  v = (int *)malloc(n * sizeof(int));
+  for (i = 0; i < n; i++) {
+    scanf("%i", &v[i]);
+  }
+  v2 = vetaux(v, n);
+  // Quick Sort  using the last element as a pivot
+  int Min = n;
+  int Max = 0;
+  quickSort(v, 0, n - 1, 0, &Min, &Max);
+  aux = Height_Difference(Min, Max);
+ 
+  printf("%d", aux);
+  // using the median of tree for a pivot
+  Min = n;
+  Max = 0;
+  Median_QuickSort(v2, 0, n - 1, 0, &Min, &Max);
+  aux = Height_Difference(Min, Max);
+ 
+  printf("\n%d", aux);
+ 
+  // libera memoria
+  free(v);
+  free(v2);
+  return 0;
+}
+ 
+int *vetaux(int *v, int n) {
+  int *v2;
+  int i, vaux;
+  v2 = (int *)malloc(n * sizeof(int));
+  for (i = 0; i < n; i++) {
+    int vaux = v[i];
+    v2[i] = vaux;
+  }
+  return v2;
+}
+ 
+void Swap(int *v, int a, int b) {
+  int x = v[a];
+  int y = v[b];
+ 
+  v[a] = y;
+  v[b] = x;
+}
+ 
+int Partition(int *v, int Index, int Last) {
+  int pivo, aux, Now, valor;
+  pivo = v[Last];
+  aux = Index;
+  for (Now = Index; Now < Last; Now++) {
+    valor = v[Now];
+    if (valor < pivo) {
+      Swap(v, aux, Now);
+      aux++;
+    }
+  }
+  Swap(v, aux, Last);
+  return aux;
+}
+ 
+void defMinMax(int aux, int *Min, int *Max) {
+  if (aux < *Min) {
+    *Min = aux;
+  }
+ 
+  if (aux > *Max) {
+    *Max = aux;
+  }
+}
+ 
+void quickSort(int *v, int Index, int Last, int Now, int *Min, int *Max) {
+  if (Index < Last) {
+    int pivo;
+    pivo = Partition(v, Index, Last);
+    quickSort(v, Index, pivo - 1, Now + 1, Min, Max);
+    quickSort(v, pivo + 1, Last, Now + 1, Min, Max);
+    return;
+  }
+  defMinMax(Now, Min, Max);
+}
+ 
+int Height_Difference(int Min, int Max) { return Max - Min; }
+ 
+int Median_Pivot(int *v, int Index, int Last) {
+  int aux;
+  aux = (Index + Last);
+  if (aux % 2 != 0) {
+    aux = (aux / 2) + 1;
+  } else {
+    aux = (aux / 2);
+  }
+  if (v[aux] > v[Last]) {
+    Swap(v, aux, Last);
+  }
+  if (v[Index] > v[Last]) {
+    Swap(v, Index, Last);
+  }
+  if (v[Index] > v[aux]) {
+    Swap(v, Index, aux);
+  }
+  return aux;
+}
+ 
+int Median_Partition(int *v, int Index, int Last) {
+  int pivo = Median_Pivot(v, Index, Last);
+  Swap(v, pivo, Last);
+  return Partition(v, Index, Last);
+}
+ 
+void Median_QuickSort(int *v, int Index, int Last, int Now, int *Min, int *Max) {
+  if (Index < Last) {
+    int pivo = Median_Partition(v, Index, Last);
+ 
+    Median_QuickSort(v, Index, pivo - 1, Now + 1, Min, Max);
+    Median_QuickSort(v, pivo + 1, Last, Now + 1, Min, Max);
+ 
+    return;
+  }
+ 
+  defMinMax(Now, Min, Max);
+}
