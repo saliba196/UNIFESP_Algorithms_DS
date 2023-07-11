@@ -1,0 +1,79 @@
+// Luiza Araumo de Oliveira Caram   Saliba, AED II
+#include <stdio.h>
+#include <stdlib.h>
+
+void Print_Hash(int *temp, int n){
+  for(int i=0;i<n; i++){
+    if(temp[i]==-2)
+      printf("\\ ");
+    else if(temp[i]==-3)
+      printf("D ");
+    else
+      printf("%i ", temp[i]);
+  }
+  printf("\n");
+}
+int hash2(int k, int n){
+  return 1+(k%(n-1));
+}
+
+int hash1(int k, int n){
+  return k%n;
+}
+
+int hash(int k, int i, int n){
+  return (hash1(k,n)+i*hash2(k,n))%n;
+}
+int Insert_Hash(int *temp, int k, int n){
+  int i=0, m;
+  do{
+    m = hash(k,i, n);
+    if(temp[m]==-2){
+      temp[m] = k;
+      return m;
+    }
+    else
+      i++;
+  }while(i!=n);
+  return 0;
+}
+int Search_Hash(int *temp, int k, int n){
+  int i=0, m;
+  do{
+    m = hash(k, i, n);
+    if (temp[m]==k)
+      return m;
+    i++;
+  }while(i!=n);
+  return -2;
+}
+int Remove_Hash(int *temp, int k, int n){
+  int m;
+  m = Search_Hash(temp, k, n);
+  if(m != -2){
+    temp[m] = -3;
+    Remove_Hash(temp, k, n);
+    return m;
+  }
+  else{
+    return -2;
+  }
+}
+int main(){
+  int *Vector_Table;
+  int i=0, x, k, n;
+  scanf("%i", &n);
+  Vector_Table = malloc(n*sizeof(int));
+  for(i=0; i<n; i++)
+    Vector_Table[i]=-2;
+  do{
+    scanf("%i", &k);
+    Insert_Hash(Vector_Table, k, n);
+    i++;
+  }while(k!=-1);
+  scanf("%i", &x);
+  if(Remove_Hash(Vector_Table, x, n)==-2){
+    printf("Value not found\n");
+  }
+  Print_Hash(Vector_Table, n);
+}
