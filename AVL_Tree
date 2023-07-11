@@ -1,0 +1,286 @@
+// Luiza Araujo de Oliveira Caram   Saliba, AED II
+ 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+ 
+ 
+// struct Node
+struct Node {
+  int Key;
+  struct Node *Left;
+  struct Node *Right;
+  int Height;
+};
+ 
+int max(int a, int b);
+
+int Height(struct Node *Node) {
+  if (Node == NULL)
+    return 0;
+  return Node->Height;
+}
+ 
+int Find_Max(int Max_Height_Right, int Max_Height_Left){
+  int Max_Height_total;
+  if(Max_Height_Right>=Max_Height_Left){
+    Max_Height_total = Max_Height_Right;
+  }
+  else{
+    Max_Height_total = Max_Height_Left;
+  }
+  return Max_Height_total;
+}
+ 
+int Height4 (struct Node *root){
+  if(root != NULL){
+    if(root->Left == NULL && root->Right == NULL){
+      return 0;
+    }
+    else{
+      return 1 + Find_Max(Height4(root->Right), Height4(root->Left));
+    }
+  }
+  else{
+     return -1; 
+  }
+}
+
+struct Node *New_Node(int Key) {
+  struct Node *Node = (struct Node *)malloc(sizeof(struct Node));
+  Node->Key = Key;
+  Node->Left = NULL;
+  Node->Right = NULL;
+  Node->Height = 1;
+  return (Node);
+}
+ 
+//Right Rotation
+struct Node *Right_Rotation(struct Node *Node) {
+  struct Node *Nodeaux, *aux2;
+  Nodeaux = Node->Left;
+  aux2 = Nodeaux->Right;
+ 
+  Nodeaux->Right = Node;
+  Node->Left = aux2;
+ 
+  Node->Height = Find_Max(Height(Node->Left), Height(Node->Right)) + 1;
+  Nodeaux->Height = Find_Max(Height(Nodeaux->Left), Height(Nodeaux->Right)) + 1;
+ 
+  return Nodeaux;
+}
+ 
+// Left Rotation
+struct Node *Left_Rotation(struct Node *Node) {
+  struct Node *Nodeaux, *aux2;
+  Nodeaux= Node->Right;
+  aux2 = Nodeaux->Left;
+ 
+  Nodeaux->Left = Node;
+  Node->Right = aux2;
+ 
+  Node->Height = Find_Max(Height(Node->Left), Height(Node->Right)) + 1;
+  Nodeaux->Height = Find_Max(Height(Nodeaux->Left), Height(Nodeaux->Right)) + 1;
+ 
+  return Nodeaux;
+}
+ 
+// Balancing Factor
+int Balacing_Factor(struct Node *Node) {
+  if (Node == NULL){
+    return 0;
+  }
+  return Height(Node->Left) - Height(Node->Right);
+}
+ 
+// Insert Node
+struct Node *Insert(struct Node *Node, int Key) {
+  // Searching for the correct position to insert
+  if (Node == NULL){
+    return (New_Node(Key));
+  }
+  if (Key < Node->Key){
+      Node->Left = Insert(Node->Left, Key);
+  }
+  else if (Key > Node->Key){
+      Node->Right = Insert(Node->Right, Key);
+  }
+  else{
+      return Node;
+  }
+  //Uptdates the balancing factor and rotates if necessary
+  Node->Height = 1 + Find_Max(Height(Node->Left),
+               Height(Node->Right));
+ 
+  int Balance_Aux;
+  Balance_Aux= Balacing_Factor(Node);
+  if (Balance_Aux > 1 && Key < Node->Left->Key)
+    return Right_Rotation(Node);
+ 
+  if (Balance_Aux < -1 && Key > Node->Right->Key)
+    return Left_Rotation(Node);
+ 
+  if (Balance_Aux > 1 && Key > Node->Left->Key) {
+    Node->Left = Left_Rotation(Node->Left);
+    return Right_Rotation(Node);
+  }
+ 
+  if (Balance_Aux < -1 && Key < Node->Right->Key) {
+    Node->Right = Right_Rotation(Node->Right);
+    return Left_Rotation(Node);
+  }
+ 
+  return Node;
+}
+ 
+struct Node *Next_Node(struct Node *Node) {
+  struct Node *temp = Node;
+ 
+  while (temp->Left != NULL)
+    temp = temp->Left;
+ 
+  return temp;
+}
+ 
+// remove Node
+struct Node *Remove_Node(struct Node *root, int Key) {
+  //Searching and removing node
+  if (root == NULL)
+    return root;
+  if (Key < root->Key)
+    root->Left = Remove_Node(root->Left, Key);
+  else if (Key > root->Key)
+    root->Right = Remove_Node(root->Right, Key);
+  else {
+    if ((root->Left == NULL) || (root->Right == NULL)) {
+      struct Node *aux;
+      aux = root->Left ? root->Left : root->Right;
+      if (aux == NULL) {
+        aux = root;
+        root = NULL;
+      } else
+        *root = *aux;
+      free(aux);
+    } else {
+      struct Node *aux = Next_Node(root->Right);
+ 
+      root->Key = aux->Key;
+ 
+      root->Right = Remove_Node(root->Right, aux->Key);
+    }
+  }
+ 
+  if (root == NULL)
+    return root;
+ 
+  // Updates the balancing factor and rotates if necessary
+  root->Height = 1 + Find_Max(Height(root->Left),
+               Height(root->Right));
+ 
+  int Balance_Aux;
+  Balance_Aux = Balacing_Factor(root);
+  if (Balance_Aux > 1 && Balacing_Factor(root->Left) >= 0)
+    return Right_Rotation(root);
+ 
+  if (Balance_Aux > 1 && Balacing_Factor(root->Left) < 0) {
+    root->Left = Left_Rotation(root->Left);
+    return Right_Rotation(root);
+  }
+ 
+  if (Balance_Aux < -1 && Balacing_Factor(root->Right) <= 0)
+    return Left_Rotation(root);
+ 
+  if (Balance_Aux < -1 && Balacing_Factor(root->Right) > 0) {
+    root->Right = Right_Rotation(root->Right);
+    return Left_Rotation(root);
+  }
+  return root;
+}
+ 
+//Search and return node
+struct Node* Search(struct Node* root,int Key){
+  if(root != NULL){
+    if(root->Key > Key){
+      return Search(root->Left,Key);
+    }
+    else{
+      if(root->Key < Key){
+        return Search(root->Right,Key);
+      }
+      else
+        return root;
+    }
+  }
+  return NULL;
+}
+ 
+//Search Key and return int (If it was found 1, else 0)
+int Search_Int(struct Node* root,int Key){
+  if(root != NULL){
+    if(root->Key > Key){
+      return Search_Int(root->Left,Key);
+    }
+    else{
+      if(root->Key < Key){
+        return Search_Int(root->Right,Key);
+      }
+      else
+        return Key;
+    }
+  }
+  return 0;
+}
+ 
+
+// Print Tree
+void Print_Tree(struct Node *root) {
+  if (root != NULL) {
+    printf("%d ", root->Key);
+    Print_Tree(root->Left);
+    Print_Tree(root->Right);
+  }
+}
+ 
+ 
+int main(){
+  struct Node *root= NULL, *Left_Node;
+  int aux1, aux2, aux3, Right_Height, Left_Height, Total_Height;
+  scanf("%i", &aux1);
+  while(aux1>=0){
+    root = Insert(root, aux1);
+    scanf("%i", &aux1);
+  }
+  // 0 = Left, 1 = Right, 3 = total
+  Total_Height = Height4(root);
+  Left_Height = Height4(root->Left) +1;
+  Right_Height = Height4(root->Right)+1;
+  printf("%i, %i, %i", Total_Height, Left_Height, Right_Height);
+  //Print_Tree(root);
+  //Calculates the first lines height
+  scanf("%i", &aux2);
+  while(aux2>=0){
+    if(Search_Int(root, aux2) == aux2 ){
+      root = Remove_Node(root, aux2);
+    }
+    else{
+      root = Insert(root,aux2);
+    }
+    scanf("%i", &aux2);
+  }
+  //printf("\n");
+  //Print_Tree(root);
+  scanf("%i", &aux3);
+  if(Search_Int(root, aux3) == aux3){
+    Total_Height = 0;
+    Left_Height = 0;
+    Right_Height = 0;
+    Left_Node = Search(root, aux3);
+    Total_Height = Height4(Left_Node);
+    Right_Height = Height4(Left_Node->Right)+1;
+    Left_Height = Height4(Left_Node->Left)+1;
+    printf("\n%i, %i, %i", Total_Height, Left_Height, Right_Height);
+  }
+  else{
+    printf("\nValue not found");
+  }
+}
