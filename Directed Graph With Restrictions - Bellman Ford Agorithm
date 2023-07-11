@@ -1,0 +1,97 @@
+// Luiza Araujo de Oliveira Caram   Saliba, RA: 163931, AED II
+#include <iostream>
+#include <limits>
+
+//Implemented on C++
+
+#define MAX_NODES 101
+#define MAX_EDGES 1025
+ 
+struct Edge {
+    int end;
+    int Wheight;
+    struct Edge* next;
+};
+ 
+struct Node {
+    struct Edge* Adjacent_List[MAX_NODES];
+};
+ 
+struct Node* NewNode() {
+    struct Node* Node = new struct Node;
+    
+    for (int i = 0; i < MAX_NODES; i++) {
+        Node->Adjacent_List[i] = nullptr;
+    }
+    return Node;
+}
+ 
+void NewEdge(struct Node* Node, int Index, int end, int Wheight) {
+    struct Edge* New_Edge = new struct Edge;
+    New_Edge->end = end;
+    New_Edge->Wheight = Wheight;
+    New_Edge->next = Node->Adjacent_List[Index];
+    Node->Adjacent_List[Index] = New_Edge;
+}
+ 
+void menor(struct Node* Node, int Index, int Restriction, int n) {
+    int Size[MAX_NODES];
+    int Passed[MAX_NODES] = {0};
+    
+    for (int i = 0; i < MAX_NODES; i++) {
+        Size[i] = std::numeric_limits<int>::max();
+    }
+    
+    Size[Index] = 0;
+    for (int j = 0; j < n - 1; j++) {
+        int minSize = std::numeric_limits<int>::max();
+        int Min_Index = -1;
+        
+        for (int i = 0; i < n; i++) {
+            if (!Passed[i] && Size[i] <= minSize) {
+                minSize = Size[i];
+                Min_Index = i;
+            }
+        }
+        
+        Passed[Min_Index] = 1;
+        
+        struct Edge* Edge = Node->Adjacent_List[Min_Index];
+        
+        while (Edge != nullptr) {
+            int end = Edge->end;
+            int Wheight = Edge->Wheight;
+            
+            if (Size[Min_Index] != std::numeric_limits<int>::max() && Wheight <= Restriction && Size[Min_Index] + Wheight < Size[end]) {
+                Size[end] = Size[Min_Index] + Wheight;
+            }
+            
+            Edge = Edge->next;
+        }
+    }
+    
+    for (int i = 0; i < n; i++) {
+        if (Size[i] == std::numeric_limits<int>::max()) {
+            std::cout << "INF ";
+        } else {
+            std::cout << Size[i] << " ";
+        }
+    }
+    
+    std::cout << std::endl;
+}
+ 
+int main() {
+    int Index, Restriction, n, numEdges;
+    std::cin >> Index >> Restriction >> n >> numEdges;
+    
+    struct Node* Node = NewNode();
+    
+    for (int i = 0; i < numEdges; i++) {
+        int Index, end, Wheight;
+        std::cin >> Index >> end >> Wheight;
+        NewEdge(Node, Index, end, Wheight);
+    }
+    menor(Node, Index, Restriction, n);
+    return 0;
+}
